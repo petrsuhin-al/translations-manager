@@ -30,19 +30,13 @@ public class TranslationsManagerComponent implements ProjectComponent {
     }
 
     @Override
-    public void projectClosed() {
-
-    }
+    public void projectClosed() { }
 
     @Override
-    public void initComponent() {
-
-    }
+    public void initComponent() { }
 
     @Override
-    public void disposeComponent() {
-
-    }
+    public void disposeComponent() { }
 
     @NotNull
     @Override

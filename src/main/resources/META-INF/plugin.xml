@@ -17,6 +17,9 @@
 
     <actions>
         <!-- Add your actions here -->
+        <action id="SettingsAction" class="SettingsAction" text="Translations Manager" icon="pluginIcon.png">
+            <add-to-group group-id="ToolsMenu" anchor="after" relative-to-action="ToolsXmlGroup"/>
+        </action>
     </actions>
 
     <project-components>

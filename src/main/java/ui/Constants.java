@@ -1,3 +1,5 @@
+package ui;
+
 public interface Constants {
   String[] excludedFolders = {
     "node_modules", ".vscode", ".idea", "e2e", ".gitlab", "k8s"

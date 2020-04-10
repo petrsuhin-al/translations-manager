@@ -16,7 +16,7 @@
     </extensions>
 
     <actions>
-        <action id="SettingsAction" class="SettingsAction" text="Translations Manager">
+        <action id="actions.SettingsAction" class="actions.SettingsAction" text="Translations Manager">
             <add-to-group group-id="ToolsMenu" anchor="after" relative-to-action="ToolsXmlGroup"/>
         </action>
     </actions>

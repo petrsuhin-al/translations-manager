@@ -4,7 +4,10 @@ import org.jetbrains.annotations.NotNull;
 
 public class SettingsAction extends AnAction {
     @Override
-    public void actionPerformed(@NotNull AnActionEvent e) {
+    public void actionPerformed(@NotNull AnActionEvent actionEvent) {
 
+        if (new SettingsDialogWrapper(actionEvent.getProject()).showAndGet()) {
+            System.out.println();
+        }
     }
 }

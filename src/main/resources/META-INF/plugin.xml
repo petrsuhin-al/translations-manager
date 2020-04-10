@@ -12,12 +12,11 @@
     <depends>com.intellij.modules.lang</depends>
 
     <extensions defaultExtensionNs="com.intellij">
-        <!-- Add your extensions here -->
+        <!-- icon="pluginIcon.png" -->
     </extensions>
 
     <actions>
-        <!-- Add your actions here -->
-        <action id="SettingsAction" class="SettingsAction" text="Translations Manager" icon="pluginIcon.png">
+        <action id="SettingsAction" class="SettingsAction" text="Translations Manager">
             <add-to-group group-id="ToolsMenu" anchor="after" relative-to-action="ToolsXmlGroup"/>
         </action>
     </actions>

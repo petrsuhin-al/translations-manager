@@ -12,7 +12,7 @@
     <depends>com.intellij.modules.lang</depends>
 
     <extensions defaultExtensionNs="com.intellij">
-        <!-- icon="pluginIcon.png" -->
+        <applicationService serviceImplementation="ui.settings_dialog.SettingsDialogSettings"/>
     </extensions>
 
     <actions>
@@ -23,7 +23,7 @@
 
     <project-components>
         <component>
-            <implementation-class>TranslationsManagerComponent</implementation-class>
+            <implementation-class>TranslationsManagerSettings</implementation-class>
         </component>
     </project-components>
 </idea-plugin>

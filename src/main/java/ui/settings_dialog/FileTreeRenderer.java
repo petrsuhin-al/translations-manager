@@ -1,4 +1,4 @@
-package ui;
+package ui.settings_dialog;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Iconable;
@@ -10,8 +10,12 @@ import javax.swing.*;
 public class FileTreeRenderer extends CheckboxTree.CheckboxTreeCellRenderer {
   @Override
   public void customizeRenderer(
-    final JTree tree, final Object value, final boolean selected,
-    final boolean expanded, final boolean leaf, final int row,
+    final JTree tree,
+    final Object value,
+    final boolean selected,
+    final boolean expanded,
+    final boolean leaf,
+    final int row,
     final boolean hasFocus
   ) {
     if (!(value instanceof FileTreeNode)) {

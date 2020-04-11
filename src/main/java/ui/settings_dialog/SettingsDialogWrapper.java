@@ -1,28 +1,18 @@
-package ui;
+package ui.settings_dialog;
 
-import com.intellij.ide.DefaultTreeExpander;
-import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.editor.Document;
-import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
-import com.intellij.openapi.vcs.VcsRoot;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.psi.search.FilenameIndex;
 import com.intellij.psi.search.GlobalSearchScope;
-import com.intellij.util.containers.ContainerUtil;
 import com.intellij.util.ui.JBUI;
-import com.intellij.util.ui.tree.TreeModelAdapter;
 import com.intellij.util.ui.tree.TreeUtil;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import javax.swing.event.TreeModelEvent;
-import javax.swing.event.TreeModelListener;
-import java.util.List;
 import java.util.regex.Pattern;
 import com.intellij.ui.*;
+import ui.Constants;
 import javax.swing.*;
 import java.awt.*;
 import java.util.*;
@@ -30,23 +20,10 @@ import java.util.*;
 public class SettingsDialogWrapper extends DialogWrapper {
     @NotNull private final Project project;
     @NotNull private final Collection<VirtualFile> files;
+    @NotNull private final Map<VirtualFile, FileTreeNode> nodes = new HashMap<>();
+
     private FileTreeNode root;
-    @NotNull private final Map<VirtualFile, FileTreeNode> nodes = ContainerUtil.newHashMap();
-
-    private Editor commands;
-    private Document commandsDocument;
-    private CheckboxTree tree;
-    private DefaultTreeExpander treeExpander;
-
-    @NotNull
-    private TreeModelListener treeModelListener = new TreeModelAdapter() {
-        @Override
-        public void treeNodesChanged(@NotNull TreeModelEvent event) {
-            ApplicationManager
-              .getApplication()
-              .runWriteAction(() -> commandsDocument.setText(text));
-        }
-    };
+    private Collection<VirtualFile> initStateFiles;
 
     public SettingsDialogWrapper(
       @NotNull Project providedProject
@@ -55,6 +32,12 @@ public class SettingsDialogWrapper extends DialogWrapper {
 
         project = providedProject;
         root = createDirectoryNodes(providedProject.getBaseDir());
+
+        SettingsDialogState state = SettingsDialogSettings.getInstance().dialogSettingsState;
+
+        if (state != null) {
+            initStateFiles = state.selectedFiles;
+        }
 
         files = this.getAllAvailableFiles(
           FilenameIndex.getAllFilesByExt(
@@ -88,6 +71,16 @@ public class SettingsDialogWrapper extends DialogWrapper {
     }
 
     @NotNull
+    @Override
+    protected Action getOKAction() {
+        SettingsDialogState state = SettingsDialogSettings.getInstance().dialogSettingsState;
+
+        state.selectedFiles = getCheckedFiles();
+
+        return super.getOKAction();
+    }
+
+    @NotNull
     private FileTreeNode createDirectoryNodes(@NotNull VirtualFile file) {
         final FileTreeNode node = nodes.get(file);
 
@@ -96,6 +89,10 @@ public class SettingsDialogWrapper extends DialogWrapper {
         }
 
         final FileTreeNode newNode = new FileTreeNode(project, file);
+
+        boolean isChecked = initStateFiles != null && initStateFiles.contains(file);
+        newNode.setChecked(isChecked);
+
         nodes.put(file, newNode);
 
         if (nodes.size() != 1) {
@@ -115,7 +112,7 @@ public class SettingsDialogWrapper extends DialogWrapper {
 
         final FileTreeRenderer renderer = new FileTreeRenderer();
 
-        tree = new CheckboxTree(renderer, root);
+        CheckboxTree tree = new CheckboxTree(renderer, root);
 
         tree.getEmptyText()
           .setText("Translation files not found")
@@ -128,20 +125,17 @@ public class SettingsDialogWrapper extends DialogWrapper {
         tree.setCellRenderer(renderer);
         tree.setShowsRootHandles(false);
         TreeUtil.installActions(tree);
+        TreeUtil.expandAll(tree);
 
         final JScrollPane scrollPane = ScrollPaneFactory.createScrollPane(tree);
         scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-        TreeUtil.expandAll(tree);
-
-        tree.getModel().addTreeModelListener(treeModelListener);
-        treeExpander = new DefaultTreeExpander(tree);
 
         return scrollPane;
     }
 
     @NotNull
     private Collection<VirtualFile> getCheckedFiles() {
-        final Collection<VirtualFile> result = new ArrayList<VirtualFile>();
+        final Collection<VirtualFile> result = new ArrayList<>();
 
         FileTreeNode leaf = (FileTreeNode) root.getFirstLeaf();
 
@@ -199,13 +193,5 @@ public class SettingsDialogWrapper extends DialogWrapper {
         }
 
         return regexp;
-    }
-
-    @NotNull
-    private VirtualFile getRootVirtualFile() {
-        String basePath = project.getBasePath();
-
-        assert basePath != null;
-        return VirtualFileManager.getInstance().findFileByUrl(project.getBasePath());
     }
 }

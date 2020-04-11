@@ -5,10 +5,10 @@ import com.intellij.psi.search.FilenameIndex;
 import com.intellij.psi.search.GlobalSearchScope;
 import org.jetbrains.annotations.NotNull;
 
-public class TranslationsManagerComponent implements ProjectComponent {
+public class TranslationsManagerSettings implements ProjectComponent {
     private Project project;
 
-    public TranslationsManagerComponent(Project project) {
+    public TranslationsManagerSettings(Project project) {
         this.project = project;
     }
 

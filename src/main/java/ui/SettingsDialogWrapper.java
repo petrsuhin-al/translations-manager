@@ -1,54 +1,66 @@
 package ui;
 
-import com.intellij.icons.AllIcons;
-import com.intellij.openapi.editor.event.SelectionListener;
+import com.intellij.ide.DefaultTreeExpander;
+import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.editor.Document;
+import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
-import com.intellij.openapi.util.IconLoader;
-import com.intellij.openapi.vcs.VcsBundle;
+import com.intellij.openapi.vcs.VcsRoot;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.openapi.vfs.VirtualFileContentsChangedAdapter;
+import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.psi.search.FilenameIndex;
 import com.intellij.psi.search.GlobalSearchScope;
-import com.intellij.ui.*;
-import com.intellij.ui.components.JBCheckBox;
-import com.intellij.uiDesigner.core.AbstractLayout;
-import com.intellij.uiDesigner.core.GridLayoutManager;
-import com.intellij.util.ui.EditableModel;
-import com.intellij.util.ui.GridBag;
+import com.intellij.util.containers.ContainerUtil;
 import com.intellij.util.ui.JBUI;
+import com.intellij.util.ui.tree.TreeModelAdapter;
+import com.intellij.util.ui.tree.TreeUtil;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import com.intellij.ui.table.JBTable;
-import ui.Constants;
-
-import javax.swing.*;
-import javax.swing.table.*;
-import java.awt.*;
-import java.util.Collection;
-import java.util.Iterator;
+import javax.swing.event.TreeModelEvent;
+import javax.swing.event.TreeModelListener;
+import java.util.List;
 import java.util.regex.Pattern;
+import com.intellij.ui.*;
+import javax.swing.*;
+import java.awt.*;
+import java.util.*;
 
 public class SettingsDialogWrapper extends DialogWrapper {
-    public Collection<VirtualFile> files;
-    public CheckedTreeNode checkboxTreeNode;
-    public JBTable table;
+    @NotNull private final Project project;
+    @NotNull private final Collection<VirtualFile> files;
+    private FileTreeNode root;
+    @NotNull private final Map<VirtualFile, FileTreeNode> nodes = ContainerUtil.newHashMap();
 
-    private static final int FILE_NAME_COLUMN = 0;
-    private static final int SELECTED_COLUMN = 1;
+    private Editor commands;
+    private Document commandsDocument;
+    private CheckboxTree tree;
+    private DefaultTreeExpander treeExpander;
+
+    @NotNull
+    private TreeModelListener treeModelListener = new TreeModelAdapter() {
+        @Override
+        public void treeNodesChanged(@NotNull TreeModelEvent event) {
+            ApplicationManager
+              .getApplication()
+              .runWriteAction(() -> commandsDocument.setText(text));
+        }
+    };
 
     public SettingsDialogWrapper(
-      @Nullable Project project
+      @NotNull Project providedProject
     ) {
-        super(project, true);
+        super(providedProject, true);
 
-        assert project != null;
-        this.files = this.getAllAvailableFiles(
+        project = providedProject;
+        root = createDirectoryNodes(providedProject.getBaseDir());
+
+        files = this.getAllAvailableFiles(
           FilenameIndex.getAllFilesByExt(
-            project,
+            providedProject,
             "json",
-            GlobalSearchScope.allScope(project)
+            GlobalSearchScope.allScope(providedProject)
           )
         );
 
@@ -64,50 +76,86 @@ public class SettingsDialogWrapper extends DialogWrapper {
         dialogPanel.setPreferredSize(JBUI.size(300, 500));
         dialogPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 0, 0));
 
-//        GridBag gridBag = new GridBag()
-//          .setDefaultInsets(JBUI.insets(1, 1, AbstractLayout.DEFAULT_VGAP, AbstractLayout.DEFAULT_HGAP))
-//          .setDefaultWeightX(1.0)
-//          .setDefaultFill(GridBagConstraints.HORIZONTAL);
+        final JPanel treePanel = new JPanel(new BorderLayout());
+        dialogPanel.add(treePanel, BorderLayout.CENTER);
 
-//        for (VirtualFile file : this.files) {
-//            dialogPanel.add(jCheckBox(file.getName()), gridBag.nextLine().next().weightx(0.5));
-//        }
 
-        JPanel myProcessorTablePanel = new JPanel(new BorderLayout());
-        SettingsTableModel myProcessorsModel = new SettingsTableModel();
-        myProcessorTablePanel.setBorder(IdeBorderFactory.createTitledBorder("Annotation Processors", false));
-        JBTable myProcessorTable = new JBTable(myProcessorsModel);
-        myProcessorTable.getEmptyText().setText("Compiler will run all automatically discovered processors");
-        JPanel myProcessorPanel = createTablePanel(myProcessorTable);
-        myProcessorTablePanel.add(myProcessorPanel, BorderLayout.CENTER);
-
-        dialogPanel.add(myProcessorTablePanel);
+        JScrollPane treeScrollPanel = createTreeScrollPanel();
+        treePanel.add(treeScrollPanel, BorderLayout.CENTER);
+        treePanel.setBorder(IdeBorderFactory.createTitledBorder("Select files for manage", false));
 
         return dialogPanel;
     }
 
-    private static JPanel createTablePanel(final JBTable table) {
-        return ToolbarDecorator.createDecorator(table)
-          .disableUpAction()
-          .disableDownAction()
-          .setAddAction(new AnActionButtonRunnable() {
-              @Override
-              public void run(AnActionButton anActionButton) {
-                  final TableCellEditor cellEditor = table.getCellEditor();
-                  if (cellEditor != null) {
-                      cellEditor.stopCellEditing();
-                  }
-                  final TableModel model = table.getModel();
-                  ((EditableModel)model).addRow();
-                  TableUtil.editCellAt(table, model.getRowCount() - 1, 0);
-              }
-          })
-          .createPanel();
+    @NotNull
+    private FileTreeNode createDirectoryNodes(@NotNull VirtualFile file) {
+        final FileTreeNode node = nodes.get(file);
+
+        if (node != null) {
+            return node;
+        }
+
+        final FileTreeNode newNode = new FileTreeNode(project, file);
+        nodes.put(file, newNode);
+
+        if (nodes.size() != 1) {
+            final VirtualFile parent = file.getParent();
+            if (parent != null) {
+                createDirectoryNodes(parent).add(newNode);
+            }
+        }
+
+        return newNode;
     }
 
-    private JCheckBox jCheckBox(@NotNull String text) {
-        String htmlString = "<html>" + text + "</html>";
-        return new JCheckBox(htmlString, AllIcons.FileTypes.Json);
+    private JScrollPane createTreeScrollPanel() {
+        for (VirtualFile entry : files) {
+            createDirectoryNodes(entry);
+        }
+
+        final FileTreeRenderer renderer = new FileTreeRenderer();
+
+        tree = new CheckboxTree(renderer, root);
+
+        tree.getEmptyText()
+          .setText("Translation files not found")
+          .setIsVerticalFlow(true);
+
+        if (!root.isLeaf()) {
+            tree.setRootVisible(true);
+        }
+
+        tree.setCellRenderer(renderer);
+        tree.setShowsRootHandles(false);
+        TreeUtil.installActions(tree);
+
+        final JScrollPane scrollPane = ScrollPaneFactory.createScrollPane(tree);
+        scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        TreeUtil.expandAll(tree);
+
+        tree.getModel().addTreeModelListener(treeModelListener);
+        treeExpander = new DefaultTreeExpander(tree);
+
+        return scrollPane;
+    }
+
+    @NotNull
+    private Collection<VirtualFile> getCheckedFiles() {
+        final Collection<VirtualFile> result = new ArrayList<VirtualFile>();
+
+        FileTreeNode leaf = (FileTreeNode) root.getFirstLeaf();
+
+        if (leaf == null) return result;
+
+        do {
+            if (!leaf.isChecked()) continue;
+
+            final VirtualFile file = leaf.getFile();
+
+            result.add(file);
+        } while ((leaf = (FileTreeNode) leaf.getNextLeaf()) != null);
+
+        return result;
     }
 
     @NotNull
@@ -135,7 +183,6 @@ public class SettingsDialogWrapper extends DialogWrapper {
           .append('|')
           .append(this.getRegExp(Constants.excludedFolders));
 
-        System.out.println(regexp);
         return Pattern.compile(regexp.toString());
     }
 
@@ -145,12 +192,20 @@ public class SettingsDialogWrapper extends DialogWrapper {
 
         for (int i = 0; i < values.length; i++) {
             if (i > 0) {
-                regexp.append("|");
+                regexp.append('|');
             }
 
             regexp.append("(?=.*").append(values[i]).append(")");
         }
 
         return regexp;
+    }
+
+    @NotNull
+    private VirtualFile getRootVirtualFile() {
+        String basePath = project.getBasePath();
+
+        assert basePath != null;
+        return VirtualFileManager.getInstance().findFileByUrl(project.getBasePath());
     }
 }

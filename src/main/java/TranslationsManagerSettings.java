@@ -17,16 +17,18 @@ public class TranslationsManagerSettings implements ProjectComponent {
         TranslationFile translationFile = new TranslationFile(project);
 
         translationFile.registerAndNotify(
-                FilenameIndex.getAllFilesByExt(
-                        project,
-                        "json",
-                        GlobalSearchScope.allScope(project)
-                )
+          FilenameIndex.getAllFilesByExt(
+            project,
+            "json",
+            GlobalSearchScope.allScope(project)
+          )
         );
 
-        VirtualFileManager.getInstance().addVirtualFileListener(
+        VirtualFileManager
+          .getInstance()
+          .addVirtualFileListener(
                 new TranslationFileListener(translationFile)
-        );
+          );
     }
 
     @Override

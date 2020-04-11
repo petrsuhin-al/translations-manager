@@ -1,4 +1,4 @@
-package ui.settings_dialog;
+package components.settings_dialog;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
@@ -12,7 +12,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import java.util.regex.Pattern;
 import com.intellij.ui.*;
-import ui.Constants;
+import components.Constants;
 import javax.swing.*;
 import java.awt.*;
 import java.util.*;

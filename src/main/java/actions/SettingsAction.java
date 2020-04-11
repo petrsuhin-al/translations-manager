@@ -3,16 +3,18 @@ package actions;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import org.jetbrains.annotations.NotNull;
-import ui.settings_dialog.SettingsDialogWrapper;
-
-import java.util.Objects;
+import components.settings_dialog.SettingsDialogWrapper;
 
 public class SettingsAction extends AnAction {
     @Override
-    public void actionPerformed(@NotNull AnActionEvent actionEvent) {
+    public void actionPerformed(
+      @NotNull AnActionEvent actionEvent
+    ) {
+        assert actionEvent.getProject() != null;
+        SettingsDialogWrapper settingsDialog = new SettingsDialogWrapper(actionEvent.getProject());
 
-        if (new SettingsDialogWrapper(Objects.requireNonNull(actionEvent.getProject())).showAndGet()) {
-            System.out.println("OK");
+        if (settingsDialog.showAndGet()) {
+           settingsDialog.close(23);
         }
     }
 }

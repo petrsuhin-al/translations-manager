@@ -1,4 +1,4 @@
-package ui;
+package components;
 
 public interface Constants {
   String[] excludedFolders = {

@@ -1,4 +1,4 @@
-package ui.settings_dialog;
+package components.settings_dialog;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;

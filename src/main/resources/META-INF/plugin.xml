@@ -12,16 +12,18 @@
     <depends>com.intellij.modules.lang</depends>
 
     <extensions defaultExtensionNs="com.intellij">
-        <!-- Add your extensions here -->
+        <applicationService serviceImplementation="components.settings_dialog.SettingsDialogSettings"/>
     </extensions>
 
     <actions>
-        <!-- Add your actions here -->
+        <action id="actions.SettingsAction" class="actions.SettingsAction" text="Translations Manager">
+            <add-to-group group-id="ToolsMenu" anchor="after" relative-to-action="ToolsXmlGroup"/>
+        </action>
     </actions>
 
     <project-components>
         <component>
-            <implementation-class>TranslationsManagerComponent</implementation-class>
+            <implementation-class>TranslationsManagerSettings</implementation-class>
         </component>
     </project-components>
 </idea-plugin>

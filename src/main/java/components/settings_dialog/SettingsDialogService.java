@@ -38,21 +38,4 @@ public class SettingsDialogService implements PersistentStateComponent<SettingsD
   public void loadState(@NotNull SettingsDialogState state) {
     dialogSettingsState = state;
   }
-
-  public void setFilesInState(Collection<VirtualFile> files, Project project) {
-    System.out.println("12345");
-    dialogSettingsState.selectedFiles = files;
-
-    TranslationFile translationFile = new TranslationFile(project);
-
-    System.out.println("FILES" + dialogSettingsState.selectedFiles);
-
-    translationFile.registerAndNotify(files);
-
-    VirtualFileManager
-      .getInstance()
-      .addVirtualFileListener(
-        new TranslationFileListener(translationFile)
-      );
-  }
 }

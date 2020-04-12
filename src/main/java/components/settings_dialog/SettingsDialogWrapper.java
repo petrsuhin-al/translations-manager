@@ -7,6 +7,8 @@ import com.intellij.psi.search.FilenameIndex;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.tree.TreeUtil;
+import components.settings_dialog.templates.FileTreeNode;
+import components.settings_dialog.templates.FileTreeRenderer;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -73,9 +75,8 @@ public class SettingsDialogWrapper extends DialogWrapper {
     @NotNull
     @Override
     protected Action getOKAction() {
-        SettingsDialogService.getInstance().setFilesInState(getCheckedFiles(), project);
-
-        System.out.println("KOKA");
+        SettingsDialogState state = SettingsDialogService.getInstance().dialogSettingsState;
+        state.selectedFiles = getCheckedFiles();
 
         return super.getOKAction();
     }

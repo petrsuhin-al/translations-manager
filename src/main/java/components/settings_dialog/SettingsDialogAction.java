@@ -8,7 +8,7 @@ import components.translation_file.TranslationFile;
 import components.translation_file.TranslationFileListener;
 import org.jetbrains.annotations.NotNull;
 
-public class DialogSettingsAction extends AnAction {
+public class SettingsDialogAction extends AnAction {
   Project project;
     @Override
     public void actionPerformed(

@@ -3,12 +3,14 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.psi.search.FilenameIndex;
 import com.intellij.psi.search.GlobalSearchScope;
+import components.translation_file.TranslationFile;
+import components.translation_file.TranslationFileListener;
 import org.jetbrains.annotations.NotNull;
 
-public class TranslationsManagerSettings implements ProjectComponent {
+public class TranslationsManager implements ProjectComponent {
     private Project project;
 
-    public TranslationsManagerSettings(Project project) {
+    public TranslationsManager(Project project) {
         this.project = project;
     }
 
@@ -43,6 +45,6 @@ public class TranslationsManagerSettings implements ProjectComponent {
     @NotNull
     @Override
     public String getComponentName() {
-        return "TranslationFile";
+        return "components.translations_file.TranslationFile";
     }
 }

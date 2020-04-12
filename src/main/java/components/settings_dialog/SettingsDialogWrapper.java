@@ -11,8 +11,8 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import java.util.regex.Pattern;
-import com.intellij.ui.*;
 import components.Constants;
+import com.intellij.ui.*;
 import javax.swing.*;
 import java.awt.*;
 import java.util.*;
@@ -33,13 +33,13 @@ public class SettingsDialogWrapper extends DialogWrapper {
         project = providedProject;
         root = createDirectoryNodes(providedProject.getBaseDir());
 
-        SettingsDialogState state = SettingsDialogSettings.getInstance().dialogSettingsState;
+        SettingsDialogState state = SettingsDialogService.getInstance().dialogSettingsState;
 
         if (state != null) {
             initStateFiles = state.selectedFiles;
         }
 
-        files = this.getAllAvailableFiles(
+        files = getAllAvailableFiles(
           FilenameIndex.getAllFilesByExt(
             providedProject,
             "json",
@@ -73,9 +73,9 @@ public class SettingsDialogWrapper extends DialogWrapper {
     @NotNull
     @Override
     protected Action getOKAction() {
-        SettingsDialogState state = SettingsDialogSettings.getInstance().dialogSettingsState;
+        SettingsDialogService.getInstance().setFilesInState(getCheckedFiles(), project);
 
-        state.selectedFiles = getCheckedFiles();
+        System.out.println("KOKA");
 
         return super.getOKAction();
     }

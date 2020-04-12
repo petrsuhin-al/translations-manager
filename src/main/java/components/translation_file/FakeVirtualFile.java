@@ -1,3 +1,5 @@
+package components.translation_file;
+
 import com.intellij.openapi.vfs.newvfs.impl.StubVirtualFile;
 import org.jetbrains.annotations.NotNull;
 

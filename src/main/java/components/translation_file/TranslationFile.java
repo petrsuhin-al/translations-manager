@@ -1,9 +1,12 @@
+package components.translation_file;
+
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.spellchecker.settings.SpellCheckerSettings;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -89,18 +92,32 @@ public class TranslationFile {
     public void registerAndNotify(Collection<VirtualFile> files) {
         System.out.println(files);
 
-        Collection<String> filePaths = register(files);
+//        Collection<String> filePaths = register(files);
 
-        if (!filePaths.isEmpty()) {
+        System.out.println("FFFFFFUCKKK" + files);
+        if (!files.isEmpty()) {
             Notifications.Bus.notify(
-                    new Notification(
-                            "Dictionary register",
-                            "Found dictionaries",
-                            "Registered the following dictionaries ["+ String.join("", filePaths)+"]",
-                            NotificationType.INFORMATION
-                    ),
-                    project
+              new Notification(
+                "Translations Manager",
+                "Changed files for manage translations",
+                "Now using following files: " + String.join(", ", getFilesNames(files)),
+                NotificationType.INFORMATION
+              ),
+              project
             );
         }
+    }
+
+    private String[] getFilesNames(@NotNull Collection<VirtualFile> files) {
+        String[] filesNames = new String[files.size()];
+        int index = 0;
+
+        for (VirtualFile file : files) {
+            filesNames[index] = file.getName();
+
+            index++;
+        }
+
+        return filesNames;
     }
 }

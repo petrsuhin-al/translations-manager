@@ -90,11 +90,8 @@ public class TranslationFile {
     }
 
     public void registerAndNotify(Collection<VirtualFile> files) {
-        System.out.println(files);
-
 //        Collection<String> filePaths = register(files);
 
-        System.out.println("FFFFFFUCKKK" + files);
         if (!files.isEmpty()) {
             Notifications.Bus.notify(
               new Notification(

@@ -11,12 +11,20 @@
 
     <depends>com.intellij.modules.lang</depends>
 
+    <extensionPoints>
+        <extensionPoint name="selectedFiles.customSelectedFilesProvider" interface="selectedFiles.CustomSelectedFilesProvider" dynamic="true"/>
+        <extensionPoint name="selectedFiles.runtimeSelectedFilesProvider" interface="selectedFiles.RuntimeSelectedFilesProvider" dynamic="true"/>
+    </extensionPoints>
+
     <extensions defaultExtensionNs="com.intellij">
-        <applicationService serviceImplementation="components.settings_dialog.SettingsDialogService"/>
+        <projectService serviceImplementation="state.ProjectSelectedFilesState"/>
+
+        <fileType name="SelectedFiles" implementationClass="SelectedFilesFileType" extensions="dic"/>
+        <spellchecker.support language="XML" implementationClass="com.intellij.spellchecker.xml.XmlSpellcheckingStrategy" id="xml"/>
     </extensions>
 
     <actions>
-        <action id="components.settings_dialog.SettingsDialogAction" class="components.settings_dialog.SettingsDialogAction" text="Translations Manager">
+        <action id="settings.SettingsDialogAction" class="settings.SettingsDialogAction" text="Translations Manager">
             <add-to-group group-id="ToolsMenu" anchor="after" relative-to-action="ToolsXmlGroup"/>
         </action>
     </actions>

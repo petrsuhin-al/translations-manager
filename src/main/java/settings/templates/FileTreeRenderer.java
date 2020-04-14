@@ -1,10 +1,11 @@
-package components.settings_dialog.templates;
+package settings.templates;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Iconable;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.CheckboxTree;
 import com.intellij.util.IconUtil;
+
 import javax.swing.*;
 
 public class FileTreeRenderer extends CheckboxTree.CheckboxTreeCellRenderer {

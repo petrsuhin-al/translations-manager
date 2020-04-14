@@ -14,7 +14,7 @@ public class TranslationFileListener implements VirtualFileListener {
     public void propertyChanged(@NotNull VirtualFilePropertyEvent event) {
         if(event.getPropertyName().equals(VirtualFile.PROP_NAME)) {
             if(event.getFileName().equals("en.json")) {
-                translationFile.registerAndNotify(event.getFile());
+//                translationFile.registerAndNotify(event.getFile());
             }
 
             if(event.getOldValue().equals("en.json")) {
@@ -28,7 +28,7 @@ public class TranslationFileListener implements VirtualFileListener {
     @Override
     public void fileCreated(@NotNull VirtualFileEvent event) {
         if(event.getFileName().equals("en.json")) {
-            translationFile.registerAndNotify(event.getFile());
+//            translationFile.registerAndNotify(event.getFile());
         }
     }
 
@@ -50,7 +50,7 @@ public class TranslationFileListener implements VirtualFileListener {
     @Override
     public void fileCopied(@NotNull VirtualFileCopyEvent event) {
         if(event.getFileName().equals("project.json")) {
-            translationFile.registerAndNotify(event.getFile());
+//            translationFile.registerAndNotify(event.getFile());
         }
     }
 }

@@ -1,20 +1,27 @@
-package components.settings_dialog;
+package settings;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
-import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.vfs.*;
 import com.intellij.psi.search.FilenameIndex;
 import com.intellij.psi.search.GlobalSearchScope;
+import com.intellij.ui.CheckboxTree;
+import com.intellij.ui.IdeBorderFactory;
+import com.intellij.ui.ScrollPaneFactory;
 import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.tree.TreeUtil;
-import components.settings_dialog.templates.FileTreeNode;
-import components.settings_dialog.templates.FileTreeRenderer;
+import constants.Constants;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import selectedFiles.EditableSelectedFiles;
+import selectedFiles.ProjectSelectedFiles;
+import selectedFiles.UserSelectedFiles;
+import settings.templates.FileTreeNode;
+import settings.templates.FileTreeRenderer;
+import state.ProjectSelectedFilesState;
 import java.util.regex.Pattern;
-import components.Constants;
-import com.intellij.ui.*;
+import utils.SelectedVFUtil;
 import javax.swing.*;
 import java.awt.*;
 import java.util.*;
@@ -24,8 +31,9 @@ public class SettingsDialogWrapper extends DialogWrapper {
     @NotNull private final Collection<VirtualFile> files;
     @NotNull private final Map<VirtualFile, FileTreeNode> nodes = new HashMap<>();
 
+    private String currentUser;
     private FileTreeNode root;
-    private Collection<VirtualFile> initStateFiles;
+    private Collection<VirtualFile> initStateFiles = new ArrayList<>();
 
     public SettingsDialogWrapper(
       @NotNull Project providedProject
@@ -33,13 +41,10 @@ public class SettingsDialogWrapper extends DialogWrapper {
         super(providedProject, true);
 
         project = providedProject;
-        root = createDirectoryNodes(providedProject.getBaseDir());
+        currentUser = System.getProperty("user.name");
 
-        SettingsDialogState state = SettingsDialogService.getInstance().dialogSettingsState;
-
-        if (state != null) {
-            initStateFiles = state.selectedFiles;
-        }
+        setBaseDir();
+        setInitStateFiles();
 
         files = getAllAvailableFiles(
           FilenameIndex.getAllFilesByExt(
@@ -67,7 +72,7 @@ public class SettingsDialogWrapper extends DialogWrapper {
 
         JScrollPane treeScrollPanel = createTreeScrollPanel();
         treePanel.add(treeScrollPanel, BorderLayout.CENTER);
-        treePanel.setBorder(IdeBorderFactory.createTitledBorder("Select files for manage", false));
+        treePanel.setBorder(IdeBorderFactory.createTitledBorder("Select files for manage:", false));
 
         return dialogPanel;
     }
@@ -75,10 +80,40 @@ public class SettingsDialogWrapper extends DialogWrapper {
     @NotNull
     @Override
     protected Action getOKAction() {
-        SettingsDialogState state = SettingsDialogService.getInstance().dialogSettingsState;
-        state.selectedFiles = getCheckedFiles();
+        Collection<VirtualFile> checkedFiles = getCheckedFiles();
+        Collection<String> filesPaths = new ArrayList<>();
+
+        checkedFiles.forEach(file -> filesPaths.add(file.toString()));
+
+        final ProjectSelectedFilesState selectedFilesState = ProjectSelectedFilesState.getInstance(project);
+        EditableSelectedFiles userSelectedFiles = new UserSelectedFiles(currentUser);
+        userSelectedFiles.replaceAll(filesPaths);
+
+        ProjectSelectedFiles projectDictionary = new ProjectSelectedFiles(Collections.singleton(userSelectedFiles));
+
+        System.out.println("IN WRAP " + projectDictionary);
+        projectDictionary.setActiveName(currentUser);
+
+        selectedFilesState.setProjectSelectedFiles(projectDictionary);
 
         return super.getOKAction();
+    }
+
+    private void setInitStateFiles() {
+        final ProjectSelectedFilesState selectedFilesState = ProjectSelectedFilesState.getInstance(project);
+        Set<String> selectedFilesPaths = selectedFilesState.getUserSelectedFiles(currentUser);
+
+        initStateFiles = SelectedVFUtil.getVirtualFilesByPaths(selectedFilesPaths);
+    }
+
+    private void setBaseDir() {
+        VirtualFile baseDir = SelectedVFUtil.getBaseDirLikeVirtualFile(project.getPresentableUrl());
+
+        if (baseDir != null) {
+            root = createDirectoryNodes(baseDir);
+        } else {
+            close(CANCEL_EXIT_CODE);
+        }
     }
 
     @NotNull
@@ -173,12 +208,13 @@ public class SettingsDialogWrapper extends DialogWrapper {
 
     @NotNull
     private Pattern createExcludedPattern() {
-        StringBuilder regexp = new StringBuilder()
-          .append(this.getRegExp(Constants.excludedFiles))
-          .append('|')
-          .append(this.getRegExp(Constants.excludedFolders));
+        String regexp = String.valueOf(
+          this.getRegExp(Constants.excludedFiles)) +
+          '|' +
+          this.getRegExp(Constants.excludedFolders
+        );
 
-        return Pattern.compile(regexp.toString());
+        return Pattern.compile(regexp);
     }
 
     @NotNull

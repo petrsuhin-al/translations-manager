@@ -1,4 +1,4 @@
-package components.settings_dialog.templates;
+package settings.templates;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;

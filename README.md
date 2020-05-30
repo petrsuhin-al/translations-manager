@@ -1,2 +1,3 @@
-# translations-manager
-Plugin for manage translation files
+# Translation File Management Plugin for Intellij Family IDE's 
+
+```IN PROGRESS```
